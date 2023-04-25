@@ -441,5 +441,222 @@ if(j>=k-1)
 
 
 
- 
+###  归并排序
+
+分治
+
+1. 确定分界点 mid=(l+r)/2
+2. 递归排序 left,right mergesort(q,l,mid) mergesort(q,mid+1,r)
+3. 归并 合二为一
+   1. 在归并过程中为了保持稳定性，两个值相同时，选择前面那个加入
+
+#### 787.归并排序
+
+```
+给定你一个长度为 n的整数数列。
+请你使用归并排序对这个数列按照从小到大进行排序。并将排好序的数列按顺序输出。
+
+输入格式
+输入共两行，第一行包含整数 n。
+第二行包含 n个整数（所有整数均在 1∼109范围内），表示整个数列。
+
+输出格式
+输出共一行，包含 n个整数，表示排好序的数列。
+
+数据范围
+1≤n≤100000
+
+输入样例：
+5
+3 1 2 4 5
+
+输出样例：
+1 2 3 4 5
+```
+
+题解：
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
+public class Main{
+    public static void main(String[] args)throws IOException{
+        InputStreamReader in=new InputStreamReader(System.in);
+        BufferedReader buf=new BufferedReader(in);
+        int n=Integer.parseInt(buf.readLine());
+        String[] res=buf.readLine().split(" ");
+        int[] q=new int[n];
+        for(int i=0;i<n;i++){
+            q[i]=Integer.parseInt(res[i]);
+        }
+        mergesort(q,0,n-1);
+        for(int i=0;i<n;i++){
+            System.out.print(q[i]+" ");
+        }
+        buf.close();
+    }
+    public static void mergesort(int[] q,int l,int r){
+        if(l>=r) return;
+        int mid=l+((r-l)>>1);
+        mergesort(q,l,mid);
+        mergesort(q,mid+1,r);
+        int i=l,j=mid+1;
+        int count=0;
+        int[] temp=new int[r-l+1];//在归并过程中，注意数组大小
+        while(i<=mid&&j<=r){
+            if(q[i]<=q[j]) temp[count++]=q[i++];
+            else temp[count++]=q[j++];
+        }
+        while(i<=mid) temp[count++]=q[i++];
+        while(j<=r) temp[count++]=q[j++];
+        for(i=l,j=0;i<=r;i++,j++){
+            q[i]=temp[j];
+        }
+    } 
+}
+```
+
+
+
+#### 788.逆序对的数量
+
+
+
+```
+给定一个长度为 n的整数数列，请你计算数列中的逆序对的数量。
+逆序对的定义如下：对于数列的第 i个和第 j 个元素，如果满足 i<j 且 a[i]>a[j]，则其为一个逆序对；否则不是。
+
+输入格式
+第一行包含整数 n，表示数列的长度。第二行包含 n个整数，表示整个数列。
+
+输出格式
+输出一个整数，表示逆序对的个数。
+
+数据范围
+1≤n≤100000，数列中的元素的取值范围 [1,109]。
+
+输入样例：
+6
+2 3 4 5 6 1
+
+输出样例：
+5
+```
+
+
+
+暴力解法会超时
+
+分治，归并排序，在合并阶段，比较两个区间的数的大小，将右边区间的数和左边的进行比较，两端都是非降序，所以比一个可以判断之后的，锁定右边，找左边第一个比它大的，然后算个数，然后右边往后挪，用前一个的左边开始算，同时也要合并入新的数组排序
+
+
+
+merge_sort() 归并排序与逆序对统计：
+
+    1.终止条件：当l≥r 时，代表子数组长度为 1 ，此时终止划分；
+    2.递归划分：计算数组中点m ，递归划分左子数组 merge_sort(l, m) 和右子数组 merge_sort(m + 1, r) ；
+    3.合并与逆序对统计：
+        1.暂存数组nums 闭区间[i,r] 内的元素至辅助数组tmp ；
+        2.循环合并： 设置双指针i,j 分别指向左 / 右子数组的首元素；
+            当i=m+1 时： 代表左子数组已合并完，因此添加右子数组当前元素 tmp[j]，并执行j=j+1 ；
+            否则，当j=r+1 时： 代表右子数组已合并完，因此添加左子数组当前元素 tmp[i]，并执行i=i+1 ；
+            否则，当tmp[i]≤tmp[j] 时：添加左子数组当前元素 tmp[i]，并执行i=i+1；
+            否则（即tmp[i]>tmp[j]）时：添加右子数组当前元素 tmp[j]，并执行j=j+1 ；此时构成m−i+1个「逆序对」，统计添加至res ；
+    4.返回值： 返回直至目前的逆序对总数res ；
+
+
+
+题解：
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
+
+public class Main{
+    
+    public static void main(String[] args)throws IOException{
+        InputStreamReader in=new InputStreamReader(System.in);
+        BufferedReader buf=new BufferedReader(in);
+        int n=Integer.parseInt(buf.readLine());
+        String[] res=buf.readLine().split(" ");
+        int[] q=new int[n];
+        
+        for(int i=0;i<n;i++){
+            q[i]=Integer.parseInt(res[i]);
+        }
+        long result=mergesort(q,0,n-1);
+        System.out.print(result);
+        buf.close();
+    }
+    public static long mergesort(int[] q,int l,int r){
+        if(l>=r) return 0;
+        int mid=l+((r-l)>>1);
+        long res=mergesort(q,l,mid)+mergesort(q,mid+1,r);
+        int i=l,j=mid+1,count=0;
+        int[] temp=new int[r-l+1];//在归并过程中，注意数组大小
+        while(i<=mid&&j<=r){
+            if(q[i]<=q[j]) temp[count++]=q[i++];
+            else {
+                temp[count++]=q[j++];
+                res+=mid-i+1;
+            }
+        }
+        while(i<=mid) temp[count++]=q[i++];
+        while(j<=r) temp[count++]=q[j++];
+        for(i=l,j=0;i<=r;i++,j++){
+            q[i]=temp[j];
+        }
+        return res;
+    } 
+}
+```
+
+注意点
+
+```java
+1.数据大小，需要用long来存
+2.初始化上可以更完善
+	eg.
+		    static int N = 100010;  // 数据规模为 10w
+    		static int[] arr = new int[N];
+    		在psvm之外，然后在函数调用中就不需要再传arr了，就是自己的代码中的q
+3.在数据的归并上有另一种做法
+  这里直接有一个一样长的数组tmp来做替换缓冲，tmp存的是分开排序后的，nums存的是归并排序后的，并且在每一次递归都重新的写入一次这次递归区间的tmp来做归并。
+class Solution {
+    int[] nums, tmp;
+    public int reversePairs(int[] nums) {
+        this.nums = nums;
+        tmp = new int[nums.length];
+        return mergeSort(0, nums.length - 1);
+    }
+    private int mergeSort(int l, int r) {
+        // 终止条件
+        if (l >= r) return 0;
+        // 递归划分
+        int m = (l + r) / 2;
+        int res = mergeSort(l, m) + mergeSort(m + 1, r);
+        // 合并阶段
+        int i = l, j = m + 1;
+        for (int k = l; k <= r; k++)
+            tmp[k] = nums[k];
+        for (int k = l; k <= r; k++) {
+            if (i == m + 1)
+                nums[k] = tmp[j++];
+            else if (j == r + 1 || tmp[i] <= tmp[j])
+                nums[k] = tmp[i++];
+            else {
+                nums[k] = tmp[j++];
+                res += m - i + 1; // 统计逆序对
+            }
+        }
+        return res;
+    }
+}
+```
+
+
 
