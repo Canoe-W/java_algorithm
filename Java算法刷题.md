@@ -660,3 +660,209 @@ class Solution {
 
 
 
+### 二分查找
+
+分为左半边和右半边
+
+eg.右边满足某种性质，左边不满足，进行一个划分
+
+去找那个左右两个分界点
+
+第一种
+
+```
+mid=(l+r+1)/2
+if(check(mid))
+	true: [mid,r] l=mid
+	false:[l,mid-1] r=mid-1
+这里的check(mid)是针对是否满足左边的性质来看的
+所以true的时候mid可能是边界点，在下一次查询中要包含，接着看右边
+false的时候一定不是边界点，所以下一次不包含，回看这个点左边
++1是因为l=r-1时，如果mid=(l+r)/2=l，if true l=l陷入死循环
+```
+
+第二种
+
+```
+mid=(l+r)/2
+if(check(mid))
+	true:[l,mid] r=mid
+	flase:[mid+1,r] l=mid+1
+这里的check检查的是否满足右半边，满足则可能是边界点，下次查询包含，看这个点和左边
+不满足则不是边界点，下次不包含，直接看右边
+```
+
+
+
+```java
+//区间[l,r]划分为[l,mid]和[mid+1,r]时使用：
+int bsearch_1(int l,int r){
+    while(l<r)//判断条件
+    {
+        int mid=l+r>>1;
+        if(check(mid)) r=mid;
+        else l=mid+1;
+    }
+    return l;
+}
+//区间[l,r]划分为[l,mid-1]和[mid,r]使用
+int bsearch_2(int l,int r){
+    while(l<r){
+        int mid=l+r+1>>1;
+        if(check(mid)) l=mid;
+        else r=mid-1;
+    }
+    return l;
+}
+```
+
+
+
+
+
+#### 789.数的范围
+
+```
+给定一个按照升序排列的长度为 n 的整数数组，以及 q个查询。
+对于每个查询，返回一个元素 k的起始位置和终止位置（位置从 0开始计数）。
+如果数组中不存在该元素，则返回 -1 -1。
+
+输入格式
+第一行包含整数 n和 q，表示数组长度和询问个数。
+第二行包含 n个整数（均在 1∼10000范围内），表示完整数组。
+接下来 q行，每行包含一个整数 k，表示一个询问元素。
+
+输出格式
+共 q行，每行包含两个整数，表示所求元素的起始位置和终止位置。
+如果数组中不存在该元素，则返回 -1 -1。
+
+数据范围
+1≤n≤100000
+1≤q≤10000
+1≤k≤10000
+
+输入样例：
+6 3
+1 2 2 3 3 4
+3
+4
+5
+
+输出样例：
+3 4
+5 5
+-1 -1
+```
+
+
+
+题解：
+
+```java
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    static final int N = 100010;
+    static int[] a = new int[N];
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        String[] s1 = in.readLine().split(" ");
+        int n = Integer.parseInt(s1[0]);
+        int q = Integer.parseInt(s1[1]);
+        String[] s2 = in.readLine().split(" ");
+        for(int i = 0; i < n; i ++) a[i] = Integer.parseInt(s2[i]);
+
+        while(q -- > 0) {
+            int k = Integer.parseInt(in.readLine());
+            int l = 0, r = n - 1;
+            while(l < r) {
+                int mid = l + r >> 1;
+                if(a[mid] >= k) r = mid;
+                else l = mid + 1;
+            }
+            if(a[l] != k) System.out.println("-1 -1");
+            else {
+                int left = l;
+                l = 0;
+                r = n - 1;
+                while(l < r) {
+                    int mid = l + r + 1 >> 1;
+                    if(a[mid] <= k) l = mid;
+                    else r = mid -1;
+                }
+                System.out.println(left + " " + l);
+            }
+        }
+    }
+}
+```
+
+重点
+
+```
+在查找两个边界的时候看边界满足的要求是什么
+比如左边界的要求时右边都大于等于x
+右边界的要求是左边都小于等于x
+这种左右的划分要求我们在进行mid的计算的时候要区分什么时候+1,算右边界的时候要+1
+自己的方法不知道为什么超出时间限制
+以后补充：
+```
+
+自己的题解
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
+public class Main{
+    static int N=10010;
+    static int n,q;
+    public static void main(String[] args) throws IOException{
+        BufferedReader buf=new BufferedReader(new InputStreamReader(System.in));
+        String[] res1=buf.readLine().split(" ");
+        n=Integer.parseInt(res1[0]);
+        q=Integer.parseInt(res1[1]);
+        int[] nums=new int[n];
+        String[] res2=buf.readLine().split(" ");
+        for(int i=0;i<n;i++){
+            nums[i]=Integer.parseInt(res2[i]);
+        }
+        while(q-->0){
+            
+            int x=Integer.parseInt(buf.readLine());
+            int l=0,r=n-1;
+            while(l<r){
+                //System.out.println("l"+l);
+                int mid=l+r>>1;
+                if(nums[mid]>=x) r=mid;
+                else l=mid+1;
+            }
+            if(nums[l]<x) System.out.println("-1 -1");
+            else {
+                System.out.print(l+" ");
+                int l2=0,r2=n-1;
+                while(l2<r2){
+                    //System.out.println("l2"+l2);
+                    int mid2=l2+r2+1>>1;
+                    while(l2<r2){
+                        if(nums[mid2]<=x) l2=mid2;
+                        else r2=mid2-1;
+                    }
+                    System.out.println(l2);
+                }
+            }
+        }
+        buf.close();
+    }
+}
+```
+
+
+
+
+
+
+
