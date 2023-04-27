@@ -862,7 +862,63 @@ public class Main{
 
 
 
+#### 790.数的三次方根
 
+```
+给定一个浮点数 n，求它的三次方根。
+
+输入格式
+共一行，包含一个浮点数 n。
+
+输出格式
+共一行，包含一个浮点数，表示问题的解。
+注意，结果保留 6位小数。
+
+数据范围
+−10000≤n≤10000
+
+输入样例：
+1000.00
+
+输出样例：
+10.000000
+```
+
+
+
+二分法，判断这个根是比目标值大还是小
+
+```java
+import java.util.Scanner;
+
+public class Main{
+    public static void main(String[] args){
+        double x;
+        Scanner sc=new Scanner(System.in);
+        x=sc.nextDouble();
+        double l=-10000,r=Math.max(1,Math.abs(x));
+        while(r-l>10e-8){
+            double mid=(l+r)/2;
+            if(mid*mid*mid>=Math.abs(x)) r=mid;
+            else l=mid;
+        }
+       if (x >= 0)
+            System.out.println(String.format("%.6f", l)); // 保留 6位小数
+        else
+            System.out.println("-" + String.format("%.6f", l));
+    }
+}
+```
+
+
+
+注意点
+
+```
+1.取绝对值判断，之后再看符号
+2.对于小于1的值，在取右边界的时候要取1，所以有一个对比r=Math.max(1,Math.abs(x))
+3.找根，判断三次方位置，比给定值大，则要取的值在现在的左边，这一点不q
+```
 
 
 
