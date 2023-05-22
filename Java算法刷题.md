@@ -922,3 +922,531 @@ public class Main{
 
 
 
+### 高精度
+
+#### 高精度加法
+
+````
+题目描述
+
+给定两个正整数（不含前导 0），计算它们的和。
+
+
+输入格式
+
+共两行，每行包含一个整数。
+
+
+输出格式
+
+共一行，包含所求的和。
+
+
+数据范围
+
+1≤整数长度≤100000
+
+
+输入样例：
+
+```
+12
+23
+```
+输出样例：
+
+```
+35
+```
+````
+
+
+
+思路
+
+加法计算是从低位逐渐相加，向高位进位，所以将数的每一位拆开对齐计算，利用数组或者vector，反向存储，比如12345存储在容器里面就是54321，然后从低位相加，高位进位。
+
+注意点：
+
+```
+
+存放结果的也是容器，在低位相加时进1则提前在高位放入1防止下一位加数不存在但是有进位
+也可以实时进位，不需要先存完再算
+
+Java中有两个类可以来处理高精度的计算
+
+分别是处理整数的BigInteger和处理小数的BigDecimal
+BigInteger 只可用于整数
+
+构造方法
+
+BigInteger(byte[] val) 
+将包含BigInteger的二进制补码二进制表达式的字节数组转换为BigInteger 
+BigInteger(int numBits, Random rnd) 
+构造一个随机生成的BigInteger，均匀分布在0到（2 numBits - 1）的范围内。  
+BigInteger(String val) 
+将BigInteger的十进制字符串表示形式转换为BigInteger。   
+
+```
+
+
+
+
+
+
+
+代码：
+
+```java
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+public class Main{
+    public static void main(String[] args){
+        Scanner scanner=new Scanner(new BufferedInputStream(System.in));
+        String a=scanner.next();
+        String b=scanner.next();
+        int aLength=a.length()-1;
+        int bLength=b.length()-1;
+        List<Integer> list=new ArrayList<>((int)(1e6+10));
+        int carry=0;//进位
+        int max=Math.max(aLength,bLength)+1;
+        while(max-->0){
+            int x=aLength<0?0:a.charAt(aLength)-'0';
+            int y=bLength<0?0:b.charAt(bLength)-'0';
+            int sum=x+y+carry;
+            list.add(sum%10);
+            carry=sum/10;
+            aLength--;
+            bLength--;
+            
+        }
+        if(carry!=0) list.add(1);
+        for(int i=list.size()-1;i>=0;i--){
+            System.out.print(list.get(i));
+        }
+        
+    }
+}
+```
+
+
+
+
+
+#### 高精度减法
+
+```
+给定两个正整数（不含前导 0），计算它们的差，计算结果可能为负数。
+
+输入格式
+共两行，每行包含一个整数。
+
+输出格式
+共一行，包含所求的差。
+数据范围
+
+1≤整数长度≤105
+
+输入样例：
+
+32
+11
+
+输出样例：
+
+21
+
+```
+
+
+
+思路
+
+```
+先比较AB的大小
+A>B A-B
+A<B -(B-A)
+然后类同加法，每一位从低位开始运算，有一个向上的借位t
+Ai-Bi-t
+>=0 Ai-Bi-t
+<0  Ai-Bi+10-t
+简化为（t+10)%10
+```
+
+
+
+代码
+
+```java
+import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Main{
+    public static void main(String[] args){
+        Scanner scanner =new Scanner(System.in);
+        String a=scanner.next();
+        String b=scanner.next();
+        List<Integer> A = new ArrayList<>();
+        List<Integer> B = new ArrayList<>();
+        for(int i=a.length()-1;i>=0;i--) A.add(a.charAt(i)-'0');
+        for(int i=b.length()-1;i>=0;i--) B.add(b.charAt(i)-'0');
+        if(!cmp(A,B)){
+            System.out.print("-");
+        }
+        List<Integer> C=sub(A,B);
+        for(int i=C.size()-1;i>=0;i--){
+            System.out.print(C.get(i));
+        }
+    }
+    public static List<Integer> sub(List<Integer> A,List<Integer> B){
+        if(!cmp(A,B)){
+            return sub(B,A);
+        }
+        
+        List<Integer> C=new ArrayList<>();
+        for(int i=0,t=0;i<A.size();i++){
+            t=A.get(i)-t;
+            if(i<B.size()) t-=B.get(i);
+            C.add((t+10)%10);
+            if(t<0) t=1;
+            else t=0;
+        }
+        while(C.size()>1&&C.get(C.size()-1)==0) C.remove(C.size()-1);
+        return C;
+    }
+    public static boolean cmp(List<Integer> A,List<Integer> B){
+        if(A.size()!=B.size()) return A.size()>B.size();
+        for(int i=A.size()-1;i>=0;i--){
+            if(A.get(i)!=B.get(i)){
+                return A.get(i)>B.get(i);
+            }
+        }
+        return true;
+    }
+}
+```
+
+
+
+#### 高精度乘法
+
+```
+给定两个非负整数（不含前导 0） A 和 B，请你计算 A×B的值。
+
+输入格式
+共两行，第一行包含整数 A，第二行包含整数 B。
+
+输出格式
+共一行，包含 A×B的值。
+
+数据范围
+1≤A的长度≤100000,
+0≤B≤10000
+
+输入样例：
+2
+3
+
+输出样例：
+6
+
+```
+
+
+
+思路
+
+```
+高精度×低精度
+用高精度的每一位去×低精度整个数
+然后个位保留，其他的进位
+所以在保留的过程中要加上前一次计算的进位再%10
+```
+
+
+
+代码
+
+```java
+import java.util.*;
+
+public class Main{
+    public static void main(String[] args){
+        Scanner scanner = new Scanner(System.in);
+        String a=scanner.next();
+        int b=scanner.nextInt();
+        List<Integer> A=new ArrayList<>();
+        for(int i=a.length()-1;i>=0;i--){
+            A.add(a.charAt(i)-'0');
+        }
+        List<Integer> C=mul(A,b);
+        for(int i=C.size()-1;i>=0;i--){
+            System.out.print(C.get(i));
+        }
+        
+    }
+    
+    public static List<Integer> mul(List<Integer> A,int b){
+        List<Integer> C=new ArrayList<>();
+        int t=0;
+        for(int i=0;i<A.size()||t!=0;i++){
+            if(i<A.size()) t+=A.get(i)*b;
+            C.add(t%10);
+            t/=10;
+            
+        }
+        while(C.size()>1&&C.get(C.size()-1)==0) C.remove(C.size()-1);
+        //这里其实可以在代码最开头加一个特判是不是有0
+        return C;
+    }
+    
+}
+```
+
+
+
+#### 高精度除法
+
+
+
+```
+给定两个非负整数（不含前导 0） A，B，请你计算 A/B的商和余数。
+
+输入格式
+共两行，第一行包含整数 A，第二行包含整数 B。
+
+输出格式
+共两行，第一行输出所求的商，第二行输出所求余数。
+
+数据范围
+1≤A的长度≤100000,
+1≤B≤10000,
+B 一定不为 0
+
+输入样例：
+7
+2
+
+输出样例：
+3
+1
+
+```
+
+
+
+思路
+
+```
+从高位开始除，前一次的余数×10再加这一位进行除法
+```
+
+
+
+代码
+
+```java
+import java.util.*;
+public class Main{
+    public static void main(String[] args){
+        Scanner scanner =new Scanner(System.in);
+        String a=scanner.next();
+        int b=scanner.nextInt();
+        List<Integer> A=new ArrayList<>(a.length());
+        for(int i=a.length()-1;i>=0;i--) A.add(a.charAt(i)-'0');
+        List<Integer> C=div(A,b);
+        for(int i=C.size()-2;i>=0;i--) System.out.print(C.get(i));
+        
+        System.out.println();
+        System.out.print(C.get(C.size()-1));
+    }
+    public static List<Integer> div(List<Integer> A,int b){
+        List<Integer> C=new ArrayList<>();
+        int r=0;
+        for(int i=A.size()-1;i>=0;i--){
+            r=r*10+A.get(i);
+            C.add(r/b);
+            r%=b;
+        }
+        Collections.reverse(C);
+        while(C.size()>1&&C.get(C.size()-1)==0) C.remove(C.size()-1);
+        C.add(r);
+        return C;
+        }
+}
+```
+
+
+
+
+
+
+
+#### 高精度汇总——java特用（ 不可用于赛事
+
+
+
+加法 add( )
+
+
+
+    import java.math.BigInteger;
+    import java.io.*;
+    
+    public class Main {
+        public static void main(String[] args) throws IOException{
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    
+            BigInteger a = new BigInteger(reader.readLine());
+            BigInteger b = new BigInteger(reader.readLine());
+            System.out.println(a.add(b));
+            reader.close();
+        }
+    }
+
+
+减法 subtract( )
+
+import java.io.*;
+import java.math.BigInteger;
+
+public class Main {
+
+    public static void main(String[] args) throws IOException{
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        BigInteger a = new BigInteger(reader.readLine());
+        BigInteger b = new BigInteger(reader.readLine());
+        System.out.println(a.subtract(b));
+        reader.close();
+    }
+}
+
+乘法 multiply( )
+
+import java.io.*;
+import java.math.BigInteger;
+
+public class Main {
+
+    public static void main(String[] args) throws IOException{
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        BigInteger a = new BigInteger(reader.readLine());
+        BigInteger b = new BigInteger(reader.readLine());
+        System.out.println(a.multiply(b));
+        reader.close();
+    }
+}
+
+除法 divideAndRemainder( )
+
+import java.io.*;
+import java.math.BigInteger;
+
+public class Main {
+
+    public static void main(String[] args) throws IOException{
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        BigInteger a = new BigInteger(reader.readLine());
+        BigInteger b = new BigInteger(reader.readLine());
+        //divide 返回值为 a/b
+        BigInteger[] c = a.divideAndRemainder(b); //返回值为数组，分别为a/b和a%b
+        System.out.println(c[0]);
+        System.out.println(c[1]);
+        reader.close();
+    }
+}
+
+取余 mod( )
+
+
+
+    import java.io.*;
+    import java.math.BigInteger;
+    
+    public class Main {
+        public static void main(String[] args) throws IOException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            BigInteger a = new BigInteger(reader.readLine());
+            BigInteger b = new BigInteger(reader.readLine());
+            System.out.println(a.mod(b));
+            reader.close();
+        }
+    }
+
+
+
+
+BigDecimal 处理浮点数运算
+
+构造方法
+
+BigDecimal(char[] in) 
+一个转换的字符数组表示 BigDecimal成 BigDecimal ，接受字符作为的相同序列 BigDecimal(String)构造。  
+BigDecimal(char[] in, int offset, int len) 
+一个转换的字符数组表示 BigDecimal成 BigDecimal ，接受字符作为的相同序列 BigDecimal(String)构造，同时允许一个子阵列被指定。    
+BigDecimal(double val) 
+将 double转换为 BigDecimal ，这是 double的二进制浮点值的精确十进制表示 
+BigDecimal(int val)
+将 int成 BigDecimal
+BigDecimal(long val) 
+将 long成 BigDecimal
+BigDecimal(String val)  
+
+加法 add( )
+
+
+
+    import java.io.*;
+    import java.math.BigDecimal;
+    
+    public class Main {
+        public static void main(String[] args) throws IOException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            BigDecimal a = new BigDecimal(reader.readLine());
+            BigDecimal b = new BigDecimal(reader.readLine());
+            System.out.println(a.add(b));
+            reader.close();
+        }
+    }
+
+
+取余 remainder( )
+
+
+
+    import java.io.*;
+    import java.math.BigDecimal;
+    
+        public class Main {
+        public static void main(String[] args) throws IOException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            BigDecimal a = new BigDecimal(reader.readLine());
+            BigDecimal b = new BigDecimal(reader.readLine());
+            System.out.println(a.remainder(b));
+            reader.close();
+        }
+    }
+
+
+除法 divide( )
+
+
+
+    import java.io.*;
+    import java.math.BigDecimal;
+    
+        public class Main {
+        public static void main(String[] args) throws IOException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            BigDecimal a = new BigDecimal(reader.readLine());
+            BigDecimal b = new BigDecimal(reader.readLine());
+            System.out.println(a.divide(b));
+            reader.close();
+        }
+    }
+
+
