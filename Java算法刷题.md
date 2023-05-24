@@ -1450,3 +1450,186 @@ BigDecimal(String val)
     }
 
 
+
+## 前缀和与差分
+
+
+
+#### 前缀和
+
+```
+输入一个长度为 n的整数序列。
+接下来再输入 m个询问，每个询问输入一对 l,r。
+对于每个询问，输出原序列中从第 l个数到第 r个数的和。
+
+输入格式
+第一行包含两个整数 n和 m。第二行包含 n个整数，表示整数数列。
+接下来 m行，每行包含两个整数 l 和 r，表示一个询问的区间范围。
+
+输出格式
+共 m行，每行输出一个询问的结果。
+
+数据范围
+
+1≤l≤r≤n,
+1≤n,m≤100000,
+−1000≤数列中元素的值≤1000
+
+输入样例：
+
+5 3
+2 1 3 6 4
+1 2
+1 3
+2 4
+
+输出样例：
+
+3
+6
+10
+
+```
+
+
+
+思路
+
+```
+实时计算到第i个数时累计大小
+a[i]从a[1]开始
+s[i]有s[0]=0,后面也是从s[1]开始
+s[i]=s[i-1]+a[i]
+这个并不固定，根据自己习惯来
+然后数组大小可以定一个比最大长度大的就行
+计算[l,r]区间的和时s[r]-s[l-1]
+```
+
+
+
+
+
+
+
+代码
+
+```java
+import java.util.*;
+
+public class Main{
+    public static void main(String[] args){
+        Scanner scanner=new Scanner(System.in);
+        int n=scanner.nextInt();
+        int m=scanner.nextInt();
+        int[] M=new int[100010];
+        int[] S=new int[100010];
+        S[0]=0;
+        for(int i=0;i<n;i++){
+            M[i]=scanner.nextInt();
+            S[i+1]=S[i]+M[i];
+        }
+        int l,r;
+        while(m!=0){
+            m--;
+            l=scanner.nextInt();
+            r=scanner.nextInt();
+            System.out.println(S[r]-S[l-1]);
+            
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+#### 子矩阵的和
+
+```
+输入一个 n 行 m 列的整数矩阵，再输入 q 个询问，每个询问包含四个整数 x1,y1,x2,y2，表示一个子矩阵的左上角坐标和右下角坐标。
+对于每个询问输出子矩阵中所有数的和。
+
+输入格式
+第一行包含三个整数 n，m，q。
+接下来 n行，每行包含 m个整数，表示整数矩阵。
+接下来 q行，每行包含四个整数 x1,y1,x2,y2，表示一组询问。
+
+输出格式
+共 q行，每行输出一个询问的结果。
+
+数据范围
+1≤n,m≤1000,
+1≤q≤200000,
+1≤x1≤x2≤n,
+1≤y1≤y2≤m,
+−1000≤矩阵内元素的值≤1000
+
+输入样例：
+
+3 4 3
+1 7 2 4
+3 6 2 8
+2 1 2 3
+1 1 2 2
+2 1 3 4
+1 3 3 4
+
+输出样例：
+
+17
+27
+21
+
+```
+
+思路
+
+```
+有点类似求面积
+交叠的地方减两次后再加一次重复的
+每一次算前缀和则是竖着加横着减去重叠再加这个点
+前缀和
+s[i][j]=s[i-1][j]+s[i][j-1]-s[i-1][j-1]
+子矩阵的和
+[x1,y1][x2,y2]=s[x2][y2]-s[x1-1][y2]-s[x2][y1-1]+s[x1-1][y1-1]
+```
+
+
+
+代码
+
+```java
+import java.util.*;
+
+public class Main{
+    public static void main(String[] args){
+        Scanner scanner=new Scanner(System.in);
+        int n=scanner.nextInt();
+        int m=scanner.nextInt();
+        int q=scanner.nextInt();
+        
+        int[][] a=new int[n+1][m+1];
+        int[][] s=new int[n+1][m+1];
+        for(int i=1;i<=n;i++){
+            for(int j=1;j<=m;j++){
+                a[i][j]=scanner.nextInt();
+                s[i][j]=a[i][j]+s[i-1][j]+s[i][j-1]-s[i-1][j-1];
+            }
+        }
+        int x1,y1,x2,y2,res;
+        while(q!=0){
+            q--;
+            x1=scanner.nextInt();
+            y1=scanner.nextInt();
+            x2=scanner.nextInt();
+            y2=scanner.nextInt();
+            res=s[x2][y2]-s[x1-1][y2]-s[x2][y1-1]+s[x1-1][y1-1];
+            System.out.println(res);
+        }
+    }
+}
+```
+
