@@ -1451,7 +1451,7 @@ BigDecimal(String val)
 
 
 
-## 前缀和与差分
+### 前缀和与差分
 
 
 
@@ -1631,5 +1631,649 @@ public class Main{
         }
     }
 }
+```
+
+
+
+
+
+#### 差分
+
+```
+输入一个长度为 n的整数序列。
+接下来输入 m个操作，每个操作包含三个整数 l,r,c，表示将序列中 [l,r] 之间的每个数加上 c。
+请你输出进行完所有操作后的序列。
+
+输入格式
+
+第一行包含两个整数 n和 m。
+第二行包含 n个整数，表示整数序列。
+接下来 m行，每行包含三个整数 l，r，c，表示一个操作。
+
+输出格式
+
+共一行，包含 n个整数，表示最终序列。
+
+数据范围
+
+1≤n,m≤100000,
+1≤l≤r≤n,
+−1000≤c≤1000,
+−1000≤整数序列中元素的值≤1000
+
+输入样例：
+
+6 3
+1 2 2 1 2 1
+1 3 1
+3 5 1
+1 6 1
+
+输出样例：
+
+3 4 5 3 4 2
+
+```
+
+
+
+思路
+
+```
+首先知道差分和前缀的概念
+a[i]是b[i]的前缀和
+则b[i]是a[i]的差分 b[i]=a[i]-a[i-1]
+在做这一题的时候，要求区间里面每一个值+c 即在求前缀和时区间前（包括左端点）中有一个数+c则之后的所有前缀和都会+c
+但是不在区间里面的不能+c所以这里选择b[l]+c避免前面也+c并且b[r+1]-c来平衡后面的前缀和
+小技巧：自定义insert(l,r,c){
+b[l]+=c;
+b[r+1]-=c;
+}
+其实就是在[i,i]+a[i]=a[i]
+这个insert函数可以用来初始化b[i]数组
+原因是a初始视作0，每一个a[i]的输入视作+c则对b[i]同步进行初始化
+```
+
+
+
+代码
+
+```java
+import java.util.*;
+
+public class Main{
+    public static void main(String[] args){
+        Scanner scanner=new Scanner(System.in);
+        int n=scanner.nextInt();
+        int m=scanner.nextInt();
+        int[] a=new int[100010];
+        int[] b=new int[100010];
+        for(int i=1;i<=n;i++){
+            a[i]=scanner.nextInt();
+            insert(b,i,i,a[i]);
+            
+        }
+        int l,r,c;
+        while(m!=0){
+            m--;
+            l=scanner.nextInt();
+            r=scanner.nextInt();
+            c=scanner.nextInt();
+            insert(b,l,r,c);
+        }
+        for(int i=1;i<=n;i++){
+            b[i]+=b[i-1];
+            System.out.print(b[i]+" ");
+        }
+        
+    }
+    public static void insert(int[] b,int l,int r,int c){
+        b[l]+=c;
+        b[r+1]-=c;
+    }
+}
+```
+
+
+
+优化
+
+```
+直接循环求b数组不借用函数
+在每一次增加的地方也直接加减
+insert是为了初始化和后面的+c统一
+```
+
+
+
+#### 差分矩阵
+
+```
+输入一个 n 行 m 列的整数矩阵，再输入 q 个操作，每个操作包含五个整数 x1,y1,x2,y2,c，其中 (x1,y1) 和 (x2,y2)表示一个子矩阵的左上角坐标和右下角坐标。
+每个操作都要将选中的子矩阵中的每个元素的值加上 c。
+请你将进行完所有操作后的矩阵输出。
+输入格式
+
+第一行包含整数 n,m,q。
+
+接下来 n行，每行包含 m个整数，表示整数矩阵。
+
+接下来 q行，每行包含 5 个整数 x1,y1,x2,y2,c，表示一个操作。
+输出格式
+
+共 n行，每行 m个整数，表示所有操作进行完毕后的最终矩阵。
+数据范围
+
+1≤n,m≤1000,
+1≤q≤100000,
+1≤x1≤x2≤n,
+1≤y1≤y2≤m,
+−1000≤c≤1000,
+−1000≤矩阵内元素的值≤1000
+```
+
+
+
+思路
+
+```
+和一维差分类似，也是使用insert初始化差分矩阵
+b[x1][y1]+=c
+b[x1][y2+1]-=c
+b[x2+1][y1]-=c
+b[x2+1][y2+1]+=c
+```
+
+
+
+代码
+
+```java
+import java.util.*;
+public class Main{
+    static int N=1010;
+    static int[][] a=new int[N][N];
+    static int[][] b=new int[N][N];
+    public static void insert(int x1,int y1,int x2,int y2,int c){
+        b[x1][y1]+=c;
+        b[x1][y2+1]-=c;
+        b[x2+1][y1]-=c;
+        b[x2+1][y2+1]+=c;
+    }
+    public static void main(String[] args){
+        Scanner scanner=new Scanner(System.in);
+        int n=scanner.nextInt();
+        int m=scanner.nextInt();
+        int q=scanner.nextInt();
+        for(int i=1;i<=n;i++){
+            for(int j=1;j<=m;j++){
+                a[i][j]=scanner.nextInt();
+                insert(i,j,i,j,a[i][j]);
+            }
+        }
+        int x1,y1,x2,y2,c;
+        while(q!=0){
+            q--;
+            x1=scanner.nextInt();
+            y1=scanner.nextInt();
+            x2=scanner.nextInt();
+            y2=scanner.nextInt();
+            c=scanner.nextInt();
+            insert(x1,y1,x2,y2,c);
+        }
+        for(int i=1;i<=n;i++){
+            for(int j=1;j<=m;j++){
+                b[i][j]+=b[i-1][j]+b[i][j-1]-b[i-1][j-1];
+                System.out.print(b[i][j]+" ");
+            }
+            System.out.println();
+        }
+    }
+}
+```
+
+
+
+### 双指针算法
+
+```{
+for(int i=0;i<n;i++){
+	for (int j=0;j<n;j++){
+		O(n^2)
+	}
+}
+
+双指针
+for(int i=0;i<n;i++){
+while(j<1&&check(i,j)) 
+	j++;
+	//每道题的算法逻辑
+}
+```
+
+先写暴力的，看有没有单调性，总结单调性然后变成双指针。
+
+
+
+
+
+
+
+
+
+#### 最长连续不重复子序列
+
+
+
+
+
+```
+给定一个长度为 n的整数序列，请找出最长的不包含重复的数的连续区间，输出它的长度。
+
+输入格式
+第一行包含整数 n。
+第二行包含 n个整数（均在 0∼105范围内），表示整数序列。
+
+输出格式
+共一行，包含一个整数，表示最长的不包含重复的数的连续区间的长度。
+
+数据范围
+1≤n≤105
+
+输入样例：
+5
+1 2 2 3 5
+
+输出样例：
+3
+```
+
+
+
+思路
+
+```
+两个指针分别指向这个子序列的前后两端，
+j指向前端，i指向后端，
+i作为外循环，一直往后挪，每一次挪动就检查现在的j是不是满足条件，不满足就把j往后挪，保证区间连续不重复
+检查满足条件方法：
+1.因为是数字所以可以直接用数组下标对应
+2.如果是更扩大化我们可以使用哈希表，原理相同
+```
+
+
+
+代码：
+
+```java
+import java.util.*;
+public class Main{
+    
+    public static void main(String[] args){
+        Scanner scanner=new Scanner(System.in);
+        int N=100010;
+        int[] s=new int[N];
+        int[] a=new int[N];
+        int n=scanner.nextInt();
+        for(int i=0;i<n;i++){
+            a[i]=scanner.nextInt();
+        }
+        int res=0;
+        for(int i=0,j=0;i<n;i++){
+            s[a[i]]++;
+            while(j<=i&&s[a[i]]>1){
+                s[a[j]]--;
+                j++;
+            }
+            res=Math.max(res,i-j+1);
+        }
+        System.out.print(res);
+    }
+}
+```
+
+
+
+#### 数组元素的目标和
+
+```
+给定两个升序排序的有序数组 A 和 B，以及一个目标值 x。
+数组下标从 0开始。
+请你求出满足 A[i]+B[j]=x的数对 (i,j)。
+数据保证有唯一解。
+
+输入格式
+第一行包含三个整数 n,m,x，分别表示 A 的长度，B 的长度以及目标值 x。
+第二行包含 n个整数，表示数组 A。
+第三行包含 m个整数，表示数组 B。
+
+输出格式
+共一行，包含两个整数 i和 j。
+
+数据范围
+数组长度不超过 105。
+同一数组内元素各不相同。
+1≤数组元素≤109
+
+输入样例：
+4 5 6
+1 2 4 7
+3 4 6 8 9
+
+输出样例：
+1 1
+```
+
+
+
+思路
+
+```
+两个数组是递增的，所以当第一个数组在不满足条件往后寻找的时候，第二个数组应该在第一个数组查询的结果上往前查询，这样可以减少查询次数
+```
+
+
+
+代码
+
+```java
+import java.util.*;
+public class Main{
+    public static void main(String[] args){
+        int[] a=new int[100010];
+        int[] b=new int[100010];
+        Scanner scanner=new Scanner(System.in);
+        int n=scanner.nextInt();
+        int m=scanner.nextInt();
+        int x=scanner.nextInt();
+        for(int i=0;i<n;i++){
+            a[i]=scanner.nextInt();
+        }
+        for(int i=0;i<m;i++){
+            b[i]=scanner.nextInt();
+        }
+        for(int i=0,j=m-1;i<n;i++){
+            while(j>=0&&a[i]+b[j]>x){
+                j--;
+            }
+                
+            if(a[i]+b[j]==x) {
+                System.out.print(i+" "+j);
+                break;
+            }
+        }
+        
+    }
+}
+```
+
+
+
+#### 判断子序列
+
+```
+给定一个长度为 n 的整数序列 a1,a2,…,an 以及一个长度为 m 的整数序列 b1,b2,…,bm。
+请你判断 a序列是否为 b序列的子序列。
+子序列指序列的一部分项按原有次序排列而得的序列，例如序列 {a1,a3,a5}是序列 {a1,a2,a3,a4,a5}的一个子序列。
+
+输入格式
+第一行包含两个整数 n,m。
+第二行包含 n个整数，表示 a1,a2,…,an。
+第三行包含 m个整数，表示 b1,b2,…,bm。
+
+输出格式
+如果 a序列是 b序列的子序列，输出一行 Yes。
+否则，输出 No。
+
+数据范围
+1≤n≤m≤105,
+−109≤ai,bi≤109
+```
+
+
+
+ 思路
+
+```
+a,b同时循环，主要按照a在b里面找第一个匹配，一个while循环，条件是&&保证两边不会越界，最后主要看a的有没有全在b里面找到
+```
+
+
+
+代码
+
+```java
+import java.util.*;
+public class Main{
+    public static void main(String[] args){
+        int[] a=new int[100010];
+        int[] b=new int[100010];
+        Scanner scanner=new Scanner(System.in);
+        int n=scanner.nextInt();
+        int m=scanner.nextInt();
+        for(int i=0;i<n;i++){
+            a[i]=scanner.nextInt();
+        }
+        for(int i=0;i<m;i++){
+            b[i]=scanner.nextInt();
+        }
+        int x=0,y=0;
+        while(x<n&&y<m){
+            if(a[x]==b[y]) x++;
+            y++;
+        }
+        if(x==n) System.out.print("Yes");
+        else System.out.print("No");
+    }
+}
+```
+
+
+
+
+
+### 位运算
+
+#### 二进制中1的个数
+
+```
+给定一个长度为 n 的数列，请你求出数列中每个数的二进制表示中 1的个数。
+
+输入格式
+第一行包含整数 n。
+第二行包含 n个整数，表示整个数列。
+
+输出格式
+共一行，包含 n个整数，其中的第 i 个数表示数列中的第 i 个数的二进制表示中 1的个数。
+
+数据范围
+1≤n≤100000,0≤数列中元素的值≤109
+
+输入样例：
+5
+1 2 3 4 5
+
+输出样例：
+1 1 2 1 2
+```
+
+
+
+思路
+
+```=
+关于计算机中数值的存储
+原码
+反码
+补码：反码+1
+
+x&-x=0-x=-x+1(借位)
+所以lowbit()=x&-x=x中的最低位1
+比如10是1010
+补码是0110
+lowbit(10)=1010&0110=10
+即返回最后一个1开头的
+这一题要统计一个数值中二进制的1的个数
+所以就不停的减去最后的1同时计数
+```
+
+
+
+代码
+
+```java
+import java.util.*;
+public class Main{
+    public static void main(String[] args){
+        Scanner scanner=new Scanner(System.in);
+        int n= scanner.nextInt();
+        int[] a=new int[n];
+        for(int i=0;i<n;i++){
+            a[i]=scanner.nextInt();
+        }
+        int count=0;
+        for(int i=0;i<n;i++){
+            while(a[i]!=0){
+                a[i]-=lowbit(a[i]);
+                count++;
+            }
+            System.out.print(count+" ");
+            count=0;
+        }
+        
+        
+    }
+    public static int lowbit(int x){
+        return x&-x;
+    }
+}
+```
+
+
+
+
+
+
+
+### 离散化
+
+一段很长的区间，但是不是所有的点都有用，我们将其中有用的点离散映射到一个数组中重新排列，用于计算和查询
+
+#### 区间和
+
+```
+假定有一个无限长的数轴，数轴上每个坐标上的数都是 0。
+现在，我们首先进行 n次操作，每次操作将某一位置 x 上的数加 c。
+接下来，进行 m次询问，每个询问包含两个整数 l 和 r，你需要求出在区间 [l,r]之间的所有数的和。
+
+输入格式
+第一行包含两个整数 n和 m。
+接下来 n行，每行包含两个整数 x 和 c。
+再接下来 m行，每行包含两个整数 l 和 r。
+
+输出格式
+共 m行，每行输出一个询问中所求的区间内数字和。
+
+数据范围
+−109≤x≤109,
+1≤n,m≤105,
+−109≤l≤r≤109,
+−10000≤c≤10000
+```
+
+思路
+
+```
+多次加，记录位置和值，把位置再单独放入容器
+查询的位置也放入容器，进行排序
+然后确定范围用多大的数组
+求前缀和
+主要用到了容器/ArrayList
+```
+
+代码
+
+```java
+import java.util.*;
+public class Main{
+    public static void main(String[] args){
+        Scanner scan = new Scanner(System.in);
+        int n = scan.nextInt();//n次操作
+        int m = scan.nextInt();//m次询问
+        int N = 300010;//表示需要用到的下标数量，因为一开始可能重复，所以按照最大可能开最大的数组；
+        int[] a =  new int[N]; //用来存值,从一开始的值，因为要用到前缀和，所以0不操作；
+        int[] s = new int[N];//用来存前缀和，从一开始进行记录a数组；
+        List<Integer> alls = new ArrayList<>();//用来存所有的下标，x,l,r;
+        //因为可能会重复乱序，所以需要进行去重，排序；
+        List<Pair> add = new ArrayList<>();//用来存n次操作
+        List<Pair> query = new ArrayList<>();//用来存m次询问
+        //输入n次操作，每次操作存入add集合中，然后将下标x存入alls集合中
+        for(int i = 0 ; i < n ; i ++ ){
+            int x = scan.nextInt();
+            int c = scan.nextInt();
+            add.add(new Pair(x,c));
+            alls.add(x);
+        }
+        //输入m次询问，每次询问存入query集合中，因为l,r是求和的下标区间和，所以l,r都存入alls集合中。
+        for(int i = 0 ; i < m ; i ++ ){
+            int l = scan.nextInt();
+            int r = scan.nextInt();
+            query.add(new Pair(l,r));
+            alls.add(l);
+            alls.add(r);
+        }
+
+        Collections.sort(alls);   //排序，现在alls集合中存的是x，l，r所有值
+        int unique = unique(alls);  //这一步是去重，因为l，x，r中可能有重复的数；
+        alls = alls.subList(0,unique);  //将去重之后的alls的长度范围中的值重新赋值给alls集合中。
+
+        //增强for循环 for(元素类型 变量名 ： 数组或者集合) 缺点：无下标，简单。
+        for(Pair item : add){
+            int index = find(item.first,alls);//
+            a[index] += item.second;//
+        }
+
+        for(int i = 1 ; i <= alls.size() ; i ++ ) s[i] = s[i-1] + a[i]; //这是前缀和公式代码
+
+        for(Pair item : query){
+            int l = find(item.first,alls); // 
+            int r = find(item.second,alls); // 
+            System.out.println(s[r] - s[l-1]); // 
+        }
+
+    }
+    //去重（只要符合是第一个数或者后面一个数不等于前面一个数就是不重复的数）
+    public static int unique(List<Integer> list){
+        int j = 0;
+        for(int i = 0 ; i <= list.size() - 1; i ++ ){
+            if(i == 0 || list.get(i) != list.get(i-1)){
+                list.set(j,list.get(i)); //将不重复之后的数一个一个重新存入list中。
+                j ++ ;
+            }
+        }
+        return j;
+    }
+ //二分查找（在集合中查找你现在的下标是在什么位置，因为需要符合我们要用的前缀和公式，要让下标不是从0输出，最低的下标是1，符合前缀和的从1开始，所以输出的值加1）
+    public static int find(int x ,List<Integer> list){
+        int l  = 0;
+        int r = list.size() - 1;
+        while(l < r){
+            int mid = ( l + r )/ 2;
+            if(list.get(mid) >= x) r = mid;
+            else l = mid + 1;
+        }
+        return l + 1;
+    }
+}   
+//这是一个Pair类，用来存操作的类
+   class Pair{
+        int first;
+        int second;
+        public Pair(int x,int c){
+            this.first = x;
+            this.second = c;
+        }
+    }
+
 ```
 
